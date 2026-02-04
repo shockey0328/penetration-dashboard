@@ -23,27 +23,11 @@ const monthLabels = ['25年3月', '25年4月', '25年5月', '25年6月', '25年7
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM加载完成');
-    console.log('Chart对象:', typeof Chart);
-    
-    // 检查必要的DOM元素
-    const requiredElements = ['trendChart', 'rankingChart', 'pieChart'];
-    let missingElements = [];
-    
-    requiredElements.forEach(id => {
-        const element = document.getElementById(id);
-        if (!element) {
-            missingElements.push(id);
-        }
-    });
-    
-    if (missingElements.length > 0) {
-        console.error('缺少必要的DOM元素:', missingElements);
-    }
     
     loadData();
     setupEventListeners();
     setupLogoErrorHandling();
-    setupAIAnalysis(); // 添加AI分析设置
+    setupAIAnalysis();
 });
 
 // 设置logo错误处理
@@ -558,127 +542,57 @@ function updateKPIsForMonth(month) {
 
 // 更新趋势折线图
 function updateTrendChart() {
-    const ctx = document.getElementById('trendChart').getContext('2d');
-    const activeRange = document.querySelector('.time-btn.active').dataset.range;
+    const container = document.getElementById('trendChart');
+    const activeRange = document.querySelector('.time-btn.active')?.dataset.range || '3';
     const monthFilter = document.getElementById('monthFilter').value;
     
     let months;
     if (monthFilter === 'recent-year') {
-        // 近1年模式，使用时间范围按钮
         months = getMonthsForRange(parseInt(activeRange));
     } else {
-        // 特定月份模式，以选择的月份为结束点显示趋势
         const selectedMonthLabel = getMonthLabel(monthFilter);
         months = getMonthsEndingWith(selectedMonthLabel, parseInt(activeRange));
     }
     
-    if (charts.trend) {
-        charts.trend.destroy();
-    }
+    // 创建纯CSS趋势图
+    let html = '<div class="css-data-display">';
+    html += '<h4 style="color: #ff6b35; margin-bottom: 15px;">📈 趋势数据</h4>';
     
-    const datasets = filteredData.map((item, index) => {
-        const data = months.map(month => ({
-            x: month,
-            y: item.data[month]
-        })).filter(point => point.y !== null);
+    filteredData.forEach((item, index) => {
+        const color = getColor(index);
+        html += `<div class="css-data-row">`;
+        html += `<div class="css-data-label" style="color: ${color};">● ${item.二级模块}</div>`;
         
-        return {
-            label: item.二级模块,
-            data: data,
-            borderColor: getColor(index),
-            backgroundColor: getColor(index, 0.1),
-            tension: 0.4,
-            fill: false
-        };
+        // 显示最新数据
+        const latestMonth = months[months.length - 1];
+        const latestValue = item.data[latestMonth];
+        html += `<div class="css-data-value">${latestValue ? latestValue.toFixed(1) + '%' : '--'}</div>`;
+        html += `</div>`;
     });
     
-    charts.trend = new Chart(ctx, {
-        type: 'line',
-        data: { datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    top: 5,
-                    right: 15,
-                    bottom: 5,
-                    left: 15
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: { 
-                        color: '#ffffff',
-                        padding: 8,
-                        boxWidth: 12,
-                        font: {
-                            size: 11
-                        },
-                        usePointStyle: true
-                    },
-                    position: 'bottom'
-                }
-            },
-            scales: {
-                x: {
-                    type: 'category',
-                    labels: months,
-                    ticks: { 
-                        color: '#ffffff',
-                        font: {
-                            size: 11
-                        },
-                        maxRotation: 0,
-                        minRotation: 0
-                    },
-                    grid: { 
-                        color: 'rgba(255, 255, 255, 0.1)',
-                        drawBorder: false
-                    }
-                },
-                y: {
-                    beginAtZero: false,
-                    ticks: { 
-                        color: '#ffffff',
-                        font: {
-                            size: 11
-                        },
-                        callback: function(value) {
-                            return value + '%';
-                        }
-                    },
-                    grid: { 
-                        color: 'rgba(255, 255, 255, 0.1)',
-                        drawBorder: false
-                    }
-                }
-            },
-            elements: {
-                point: {
-                    radius: 3,
-                    hoverRadius: 5
-                },
-                line: {
-                    tension: 0.4
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            }
-        }
+    html += '</div>';
+    
+    // 添加月份数据对比
+    html += '<div class="css-data-display">';
+    html += '<h4 style="color: #ff6b35; margin-bottom: 15px;">📊 月份对比</h4>';
+    months.forEach(month => {
+        const monthData = filteredData.map(item => item.data[month]).filter(v => v !== null);
+        const avgValue = monthData.length > 0 ? (monthData.reduce((a, b) => a + b, 0) / monthData.length) : 0;
+        
+        html += `<div class="css-data-row">`;
+        html += `<div class="css-data-label">${month}</div>`;
+        html += `<div class="css-data-value">${avgValue.toFixed(1)}%</div>`;
+        html += `</div>`;
     });
+    html += '</div>';
+    
+    container.innerHTML = html;
 }
 
 // 更新排名柱状图
 function updateRankingChart() {
-    const ctx = document.getElementById('rankingChart').getContext('2d');
+    const container = document.getElementById('rankingChart');
     const monthFilter = document.getElementById('monthFilter').value;
-    
-    if (charts.ranking) {
-        charts.ranking.destroy();
-    }
     
     let rankingData = [];
     
@@ -710,66 +624,32 @@ function updateRankingChart() {
     // 按降序排列
     rankingData.sort((a, b) => b.value - a.value);
     
-    charts.ranking = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: rankingData.map(item => item.module),
-            datasets: [{
-                data: rankingData.map(item => item.value),
-                backgroundColor: rankingData.map((_, index) => getColor(index, 0.8)),
-                borderColor: rankingData.map((_, index) => getColor(index)),
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    top: 5,
-                    right: 5,
-                    bottom: 5,
-                    left: 5
-                }
-            },
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                x: {
-                    ticks: { 
-                        color: '#ffffff',
-                        font: {
-                            size: 10
-                        },
-                        callback: function(value) {
-                            return value + '%';
-                        }
-                    },
-                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                },
-                y: {
-                    ticks: { 
-                        color: '#ffffff',
-                        font: {
-                            size: 10
-                        }
-                    },
-                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                }
-            }
-        }
+    // 创建纯CSS柱状图
+    let html = '<div class="css-bar-chart">';
+    
+    const maxValue = Math.max(...rankingData.map(item => item.value));
+    
+    rankingData.forEach((item, index) => {
+        const percentage = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+        const color = getColor(index);
+        
+        html += `<div class="css-bar-item">`;
+        html += `<div class="css-bar-label">${item.module}</div>`;
+        html += `<div class="css-bar-container">`;
+        html += `<div class="css-bar-fill" style="width: ${percentage}%; background: ${color};">`;
+        html += `<div class="css-bar-value">${item.value.toFixed(1)}%</div>`;
+        html += `</div>`;
+        html += `</div>`;
+        html += `</div>`;
     });
+    
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 // 更新分类占比图
 function updatePieChart() {
-    const ctx = document.getElementById('pieChart').getContext('2d');
-    
-    if (charts.pie) {
-        charts.pie.destroy();
-    }
+    const container = document.getElementById('pieChart');
     
     // 统计各一级模块的二级模块数量
     const categoryCount = {};
@@ -780,44 +660,41 @@ function updatePieChart() {
     
     const labels = Object.keys(categoryCount);
     const data = Object.values(categoryCount);
+    const total = data.reduce((a, b) => a + b, 0);
     
-    charts.pie = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: labels.map((_, index) => getColor(index, 0.8)),
-                borderColor: labels.map((_, index) => getColor(index)),
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    top: 5,
-                    right: 5,
-                    bottom: 5,
-                    left: 5
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { 
-                        color: '#ffffff',
-                        padding: 10,
-                        boxWidth: 12,
-                        font: {
-                            size: 10
-                        }
-                    }
-                }
-            }
-        }
+    // 创建纯CSS饼图
+    let html = '<div class="css-pie-chart">';
+    
+    // 饼图视觉部分
+    let cumulativePercentage = 0;
+    let gradientStops = [];
+    
+    labels.forEach((label, index) => {
+        const percentage = (data[index] / total) * 100;
+        const color = getColor(index);
+        
+        gradientStops.push(`${color} ${cumulativePercentage}% ${cumulativePercentage + percentage}%`);
+        cumulativePercentage += percentage;
     });
+    
+    html += `<div class="css-pie-visual" style="background: conic-gradient(${gradientStops.join(', ')});"></div>`;
+    
+    // 图例
+    html += '<div class="css-pie-legend">';
+    labels.forEach((label, index) => {
+        const color = getColor(index);
+        const count = data[index];
+        const percentage = ((count / total) * 100).toFixed(1);
+        
+        html += `<div class="css-pie-legend-item">`;
+        html += `<div class="css-pie-legend-color" style="background: ${color};"></div>`;
+        html += `<span>${label}: ${count}个 (${percentage}%)</span>`;
+        html += `</div>`;
+    });
+    html += '</div>';
+    
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 // 更新热力图

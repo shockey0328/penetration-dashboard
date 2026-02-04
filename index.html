@@ -4,18 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>各模块渗透率看板</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-    <script>
-        // 检查Chart.js是否加载成功
-        window.addEventListener('load', function() {
-            if (typeof Chart === 'undefined') {
-                console.error('Chart.js 加载失败');
-                document.body.innerHTML = '<div style="text-align:center;padding:50px;color:red;">Chart.js 库加载失败，请检查网络连接</div>';
-            } else {
-                console.log('Chart.js 加载成功');
-            }
-        });
-    </script>
+    <!-- 移除Chart.js依赖，使用纯CSS图表 -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -108,7 +97,9 @@
                         <button class="time-btn" data-range="12">近12个月</button>
                     </div>
                 </div>
-                <canvas id="trendChart"></canvas>
+                <div id="trendChart" class="css-chart-container">
+                    <!-- 纯CSS图表将在这里生成 -->
+                </div>
             </div>
 
             <!-- 右侧图表组 -->
@@ -118,7 +109,9 @@
                     <div class="chart-header">
                         <h3>模块平均渗透率排名</h3>
                     </div>
-                    <canvas id="rankingChart"></canvas>
+                    <div id="rankingChart" class="css-chart-container">
+                        <!-- 纯CSS柱状图将在这里生成 -->
+                    </div>
                 </div>
 
                 <!-- 分类占比图 -->
@@ -126,7 +119,9 @@
                     <div class="chart-header">
                         <h3>各一级模块分布</h3>
                     </div>
-                    <canvas id="pieChart"></canvas>
+                    <div id="pieChart" class="css-chart-container">
+                        <!-- 纯CSS饼图将在这里生成 -->
+                    </div>
                 </div>
             </div>
         </div>
