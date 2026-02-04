@@ -584,8 +584,8 @@ function updateTrendChart() {
     
     // SVG图表
     const chartWidth = 600;
-    const chartHeight = 300;
-    const padding = 60;
+    const chartHeight = 240;
+    const padding = 50;
     
     html += `<svg width="100%" height="${chartHeight + padding * 2}" viewBox="0 0 ${chartWidth + padding * 2} ${chartHeight + padding * 2}" class="line-chart-svg">`;
     
