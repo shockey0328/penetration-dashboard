@@ -554,36 +554,51 @@ function updateTrendChart() {
         months = getMonthsEndingWith(selectedMonthLabel, parseInt(activeRange));
     }
     
-    // 创建纯CSS趋势图
-    let html = '<div class="css-data-display">';
-    html += '<h4 style="color: #ff6b35; margin-bottom: 15px;">📈 趋势数据</h4>';
+    // 创建更好的趋势图显示
+    let html = '<div class="trend-chart-container">';
     
-    filteredData.forEach((item, index) => {
+    // 图表标题
+    html += '<div class="trend-chart-header">';
+    html += '<h4 style="color: #ff6b35; margin: 0 0 20px 0;">📈 渗透率趋势</h4>';
+    html += '</div>';
+    
+    // 创建简化的折线图效果
+    html += '<div class="trend-lines-container">';
+    
+    // 月份标签
+    html += '<div class="trend-months">';
+    months.forEach(month => {
+        html += `<div class="trend-month-label">${month}</div>`;
+    });
+    html += '</div>';
+    
+    // 数据线条
+    filteredData.slice(0, 6).forEach((item, index) => { // 只显示前6个模块避免过于拥挤
         const color = getColor(index);
-        html += `<div class="css-data-row">`;
-        html += `<div class="css-data-label" style="color: ${color};">● ${item.二级模块}</div>`;
+        html += '<div class="trend-line-row">';
+        html += `<div class="trend-module-name" style="color: ${color};">● ${item.二级模块}</div>`;
+        html += '<div class="trend-values">';
         
-        // 显示最新数据
-        const latestMonth = months[months.length - 1];
-        const latestValue = item.data[latestMonth];
-        html += `<div class="css-data-value">${latestValue ? latestValue.toFixed(1) + '%' : '--'}</div>`;
-        html += `</div>`;
+        months.forEach(month => {
+            const value = item.data[month];
+            html += `<div class="trend-value" style="color: ${color};">`;
+            html += value !== null ? value.toFixed(1) + '%' : '--';
+            html += '</div>';
+        });
+        
+        html += '</div>';
+        html += '</div>';
     });
     
     html += '</div>';
     
-    // 添加月份数据对比
-    html += '<div class="css-data-display">';
-    html += '<h4 style="color: #ff6b35; margin-bottom: 15px;">📊 月份对比</h4>';
-    months.forEach(month => {
-        const monthData = filteredData.map(item => item.data[month]).filter(v => v !== null);
-        const avgValue = monthData.length > 0 ? (monthData.reduce((a, b) => a + b, 0) / monthData.length) : 0;
-        
-        html += `<div class="css-data-row">`;
-        html += `<div class="css-data-label">${month}</div>`;
-        html += `<div class="css-data-value">${avgValue.toFixed(1)}%</div>`;
-        html += `</div>`;
-    });
+    // 如果有更多模块，显示摘要
+    if (filteredData.length > 6) {
+        html += '<div class="trend-summary">';
+        html += `<p style="color: #cccccc; font-size: 12px; margin: 10px 0;">显示前6个模块，共${filteredData.length}个模块</p>`;
+        html += '</div>';
+    }
+    
     html += '</div>';
     
     container.innerHTML = html;
