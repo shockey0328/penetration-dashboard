@@ -189,23 +189,25 @@ body {
 /* 主要图表区域样式 */
 .main-charts-section {
     display: grid;
-    grid-template-columns: 1.8fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: auto auto;
     gap: 15px;
     margin-bottom: 15px;
 }
 
 .trend-chart {
-    grid-column: 1;
+    grid-column: 1 / 3;
     grid-row: 1 / 3;
 }
 
-.right-charts {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    display: grid;
-    grid-template-rows: 1fr 1fr;
-    gap: 15px;
+.ranking-chart {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.pie-chart {
+    grid-column: 3;
+    grid-row: 2;
 }
 
 .chart-container {
@@ -325,16 +327,23 @@ body {
 /* 响应式设计 */
 @media (max-width: 1200px) {
     .main-charts-section {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
     }
     
     .trend-chart {
-        grid-row: span 1;
+        grid-column: 1 / 3;
+        grid-row: 1;
     }
     
-    .right-charts {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr;
+    .ranking-chart {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .pie-chart {
+        grid-column: 2;
+        grid-row: 2;
     }
     
     .kpi-section {
@@ -357,6 +366,26 @@ body {
         width: 100%;
         flex-direction: column;
         gap: 12px;
+    }
+    
+    .main-charts-section {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+    }
+    
+    .trend-chart {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    .ranking-chart {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .pie-chart {
+        grid-column: 1;
+        grid-row: 3;
     }
     
     .dashboard-header h1 {
@@ -387,11 +416,6 @@ body {
     
     .kpi-value {
         font-size: 1.4rem;
-    }
-    
-    .right-charts {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
     }
 }
 
@@ -836,29 +860,33 @@ canvas {
 .css-bar-chart {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     height: 100%;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
 .css-bar-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 5px 0;
+    gap: 8px;
+    padding: 4px 0;
+    min-height: 24px;
 }
 
 .css-bar-label {
-    min-width: 80px;
-    font-size: 12px;
+    min-width: 70px;
+    font-size: 11px;
     color: #ffffff;
     text-align: right;
+    flex-shrink: 0;
 }
 
 .css-bar-container {
     flex: 1;
-    height: 20px;
+    height: 18px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 9px;
     position: relative;
     overflow: hidden;
 }
@@ -866,17 +894,17 @@ canvas {
 .css-bar-fill {
     height: 100%;
     background: linear-gradient(90deg, #ff6b35, #f7931e);
-    border-radius: 10px;
+    border-radius: 9px;
     transition: width 0.8s ease;
     position: relative;
 }
 
 .css-bar-value {
     position: absolute;
-    right: 8px;
+    right: 6px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 11px;
+    font-size: 10px;
     color: #ffffff;
     font-weight: 600;
 }
@@ -887,11 +915,13 @@ canvas {
     flex-direction: column;
     align-items: center;
     gap: 15px;
+    height: 100%;
+    justify-content: center;
 }
 
 .css-pie-visual {
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
     border-radius: 50%;
     position: relative;
     background: conic-gradient(
@@ -976,7 +1006,6 @@ canvas {
     padding: 15px;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 8px;
-    min-height: 320px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -984,7 +1013,7 @@ canvas {
 
 .line-chart-svg {
     width: 100%;
-    height: 280px;
+    height: 350px;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 8px;
     margin: 10px 0;
