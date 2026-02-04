@@ -554,49 +554,102 @@ function updateTrendChart() {
         months = getMonthsEndingWith(selectedMonthLabel, parseInt(activeRange));
     }
     
-    // 创建更好的趋势图显示
-    let html = '<div class="trend-chart-container">';
-    
-    // 图表标题
-    html += '<div class="trend-chart-header">';
+    // 创建SVG折线图
+    let html = '<div class="svg-line-chart-container">';
     html += '<h4 style="color: #ff6b35; margin: 0 0 20px 0;">📈 渗透率趋势</h4>';
-    html += '</div>';
     
-    // 创建简化的折线图效果
-    html += '<div class="trend-lines-container">';
-    
-    // 月份标签
-    html += '<div class="trend-months">';
-    months.forEach(month => {
-        html += `<div class="trend-month-label">${month}</div>`;
-    });
-    html += '</div>';
-    
-    // 数据线条
-    filteredData.slice(0, 6).forEach((item, index) => { // 只显示前6个模块避免过于拥挤
-        const color = getColor(index);
-        html += '<div class="trend-line-row">';
-        html += `<div class="trend-module-name" style="color: ${color};">● ${item.二级模块}</div>`;
-        html += '<div class="trend-values">';
-        
+    // 计算数据范围
+    let allValues = [];
+    filteredData.forEach(item => {
         months.forEach(month => {
+            if (item.data[month] !== null) {
+                allValues.push(item.data[month]);
+            }
+        });
+    });
+    
+    const minValue = Math.min(...allValues);
+    const maxValue = Math.max(...allValues);
+    const valueRange = maxValue - minValue;
+    
+    // SVG图表
+    const chartWidth = 600;
+    const chartHeight = 300;
+    const padding = 50;
+    
+    html += `<svg width="100%" height="${chartHeight + padding * 2}" viewBox="0 0 ${chartWidth + padding * 2} ${chartHeight + padding * 2}" class="line-chart-svg">`;
+    
+    // 绘制网格线
+    html += '<defs><pattern id="grid" width="50" height="30" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs>';
+    html += `<rect width="100%" height="100%" fill="url(#grid)" />`;
+    
+    // 绘制坐标轴
+    html += `<line x1="${padding}" y1="${padding}" x2="${padding}" y2="${chartHeight + padding}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`;
+    html += `<line x1="${padding}" y1="${chartHeight + padding}" x2="${chartWidth + padding}" y2="${chartHeight + padding}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`;
+    
+    // X轴标签（月份）
+    months.forEach((month, index) => {
+        const x = padding + (index * chartWidth / (months.length - 1));
+        html += `<text x="${x}" y="${chartHeight + padding + 20}" text-anchor="middle" fill="#cccccc" font-size="12">${month}</text>`;
+        html += `<line x1="${x}" y1="${chartHeight + padding}" x2="${x}" y2="${chartHeight + padding + 5}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
+    });
+    
+    // Y轴标签（百分比）
+    for (let i = 0; i <= 5; i++) {
+        const value = minValue + (valueRange * i / 5);
+        const y = chartHeight + padding - (i * chartHeight / 5);
+        html += `<text x="${padding - 10}" y="${y + 5}" text-anchor="end" fill="#cccccc" font-size="11">${value.toFixed(1)}%</text>`;
+        html += `<line x1="${padding - 5}" y1="${y}" x2="${padding}" y2="${y}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
+    }
+    
+    // 绘制折线
+    filteredData.slice(0, 6).forEach((item, index) => {
+        const color = getColor(index);
+        let pathData = '';
+        let points = [];
+        
+        months.forEach((month, monthIndex) => {
             const value = item.data[month];
-            html += `<div class="trend-value" style="color: ${color};">`;
-            html += value !== null ? value.toFixed(1) + '%' : '--';
-            html += '</div>';
+            if (value !== null) {
+                const x = padding + (monthIndex * chartWidth / (months.length - 1));
+                const y = chartHeight + padding - ((value - minValue) / valueRange * chartHeight);
+                points.push({ x, y, value });
+                
+                if (pathData === '') {
+                    pathData = `M ${x} ${y}`;
+                } else {
+                    pathData += ` L ${x} ${y}`;
+                }
+            }
         });
         
-        html += '</div>';
-        html += '</div>';
+        if (pathData) {
+            // 绘制折线
+            html += `<path d="${pathData}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+            
+            // 绘制数据点
+            points.forEach(point => {
+                html += `<circle cx="${point.x}" cy="${point.y}" r="4" fill="${color}" stroke="#ffffff" stroke-width="2"/>`;
+                html += `<title>${item.二级模块}: ${point.value.toFixed(1)}%</title>`;
+            });
+        }
     });
     
+    html += '</svg>';
+    
+    // 图例
+    html += '<div class="line-chart-legend">';
+    filteredData.slice(0, 6).forEach((item, index) => {
+        const color = getColor(index);
+        html += `<div class="legend-item">`;
+        html += `<div class="legend-color" style="background: ${color};"></div>`;
+        html += `<span class="legend-label">${item.二级模块}</span>`;
+        html += `</div>`;
+    });
     html += '</div>';
     
-    // 如果有更多模块，显示摘要
     if (filteredData.length > 6) {
-        html += '<div class="trend-summary">';
-        html += `<p style="color: #cccccc; font-size: 12px; margin: 10px 0;">显示前6个模块，共${filteredData.length}个模块</p>`;
-        html += '</div>';
+        html += `<p style="color: #cccccc; font-size: 12px; text-align: center; margin-top: 10px;">显示前6个模块，共${filteredData.length}个模块</p>`;
     }
     
     html += '</div>';

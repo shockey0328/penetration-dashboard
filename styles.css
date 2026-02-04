@@ -959,129 +959,122 @@ canvas {
         font-size: 11px;
     }
 }
-/* 趋势图特殊样式 */
-.trend-chart-container {
-    padding: 15px;
+/* SVG折线图样式 */
+.svg-line-chart-container {
+    padding: 20px;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 8px;
-    min-height: 350px;
+    min-height: 400px;
 }
 
-.trend-chart-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 15px;
-    margin-bottom: 20px;
+.line-chart-svg {
+    width: 100%;
+    height: auto;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    margin: 20px 0;
 }
 
-.trend-lines-container {
+.line-chart-legend {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.trend-months {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 10px;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.trend-months::before {
-    content: '';
-}
-
-.trend-months .trend-month-label {
-    font-size: 11px;
-    color: #cccccc;
-    text-align: center;
-    padding: 5px;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 15px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
-.trend-line-row {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 10px;
+.legend-item {
+    display: flex;
     align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.trend-module-name {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 5px 8px;
+    gap: 8px;
+    padding: 5px 10px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-    text-align: center;
-}
-
-.trend-values {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 5px;
-}
-
-.trend-value {
-    font-size: 12px;
-    font-weight: 600;
-    text-align: center;
-    padding: 8px 5px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-    border-left: 3px solid currentColor;
+    border-radius: 15px;
     transition: all 0.3s ease;
 }
 
-.trend-value:hover {
+.legend-item:hover {
     background: rgba(255, 107, 53, 0.2);
     transform: translateY(-2px);
 }
 
-.trend-summary {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
 }
+
+.legend-label {
+    font-size: 12px;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+/* SVG动画效果 */
+.line-chart-svg path {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawLine 2s ease-in-out forwards;
+}
+
+.line-chart-svg circle {
+    opacity: 0;
+    animation: fadeInPoint 0.5s ease-in-out forwards;
+}
+
+@keyframes drawLine {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes fadeInPoint {
+    to {
+        opacity: 1;
+    }
+}
+
+/* 为不同的线条添加延迟 */
+.line-chart-svg path:nth-child(3) { animation-delay: 0.2s; }
+.line-chart-svg path:nth-child(5) { animation-delay: 0.4s; }
+.line-chart-svg path:nth-child(7) { animation-delay: 0.6s; }
+.line-chart-svg path:nth-child(9) { animation-delay: 0.8s; }
+.line-chart-svg path:nth-child(11) { animation-delay: 1.0s; }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-    .trend-line-row {
-        grid-template-columns: 1fr;
-        gap: 8px;
+    .svg-line-chart-container {
+        padding: 15px;
+        min-height: 350px;
     }
     
-    .trend-months {
-        grid-template-columns: 1fr;
+    .line-chart-legend {
+        gap: 10px;
+        padding: 10px;
     }
     
-    .trend-values {
-        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-        gap: 3px;
+    .legend-item {
+        padding: 3px 8px;
     }
     
-    .trend-value {
+    .legend-label {
         font-size: 11px;
-        padding: 6px 3px;
-    }
-    
-    .trend-module-name {
-        font-size: 11px;
-        margin-bottom: 5px;
     }
 }
 
 @media (max-width: 480px) {
-    .trend-values {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .trend-chart-container {
+    .svg-line-chart-container {
         padding: 10px;
         min-height: 300px;
+    }
+    
+    .line-chart-legend {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
     }
 }
