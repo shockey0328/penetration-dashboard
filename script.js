@@ -554,13 +554,16 @@ function updateTrendChart() {
         months = getMonthsEndingWith(selectedMonthLabel, parseInt(activeRange));
     }
     
+    // 使用全部筛选后的数据，不限制数量
+    const displayData = filteredData;
+    
     // 创建SVG折线图
     let html = '<div class="svg-line-chart-container">';
     html += '<h4 style="color: #ff6b35; margin: 0 0 20px 0;">📈 渗透率趋势</h4>';
     
     // 计算数据范围
     let allValues = [];
-    filteredData.forEach(item => {
+    displayData.forEach(item => {
         months.forEach(month => {
             if (item.data[month] !== null) {
                 allValues.push(item.data[month]);
@@ -568,14 +571,21 @@ function updateTrendChart() {
         });
     });
     
+    if (allValues.length === 0) {
+        html += '<div style="text-align: center; padding: 50px; color: #cccccc;">暂无数据</div>';
+        html += '</div>';
+        container.innerHTML = html;
+        return;
+    }
+    
     const minValue = Math.min(...allValues);
     const maxValue = Math.max(...allValues);
-    const valueRange = maxValue - minValue;
+    const valueRange = maxValue - minValue || 1; // 避免除零
     
     // SVG图表
     const chartWidth = 600;
     const chartHeight = 300;
-    const padding = 50;
+    const padding = 60;
     
     html += `<svg width="100%" height="${chartHeight + padding * 2}" viewBox="0 0 ${chartWidth + padding * 2} ${chartHeight + padding * 2}" class="line-chart-svg">`;
     
@@ -589,7 +599,7 @@ function updateTrendChart() {
     
     // X轴标签（月份）
     months.forEach((month, index) => {
-        const x = padding + (index * chartWidth / (months.length - 1));
+        const x = padding + (index * chartWidth / Math.max(months.length - 1, 1));
         html += `<text x="${x}" y="${chartHeight + padding + 20}" text-anchor="middle" fill="#cccccc" font-size="12">${month}</text>`;
         html += `<line x1="${x}" y1="${chartHeight + padding}" x2="${x}" y2="${chartHeight + padding + 5}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
     });
@@ -602,8 +612,8 @@ function updateTrendChart() {
         html += `<line x1="${padding - 5}" y1="${y}" x2="${padding}" y2="${y}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
     }
     
-    // 绘制折线
-    filteredData.slice(0, 6).forEach((item, index) => {
+    // 绘制折线 - 显示所有筛选后的模块
+    displayData.forEach((item, index) => {
         const color = getColor(index);
         let pathData = '';
         let points = [];
@@ -611,7 +621,7 @@ function updateTrendChart() {
         months.forEach((month, monthIndex) => {
             const value = item.data[month];
             if (value !== null) {
-                const x = padding + (monthIndex * chartWidth / (months.length - 1));
+                const x = padding + (monthIndex * chartWidth / Math.max(months.length - 1, 1));
                 const y = chartHeight + padding - ((value - minValue) / valueRange * chartHeight);
                 points.push({ x, y, value });
                 
@@ -625,11 +635,11 @@ function updateTrendChart() {
         
         if (pathData) {
             // 绘制折线
-            html += `<path d="${pathData}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+            html += `<path d="${pathData}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>`;
             
             // 绘制数据点
             points.forEach(point => {
-                html += `<circle cx="${point.x}" cy="${point.y}" r="4" fill="${color}" stroke="#ffffff" stroke-width="2"/>`;
+                html += `<circle cx="${point.x}" cy="${point.y}" r="4" fill="${color}" stroke="#ffffff" stroke-width="2" opacity="0.9"/>`;
                 html += `<title>${item.二级模块}: ${point.value.toFixed(1)}%</title>`;
             });
         }
@@ -637,9 +647,9 @@ function updateTrendChart() {
     
     html += '</svg>';
     
-    // 图例
+    // 图例 - 显示所有模块
     html += '<div class="line-chart-legend">';
-    filteredData.slice(0, 6).forEach((item, index) => {
+    displayData.forEach((item, index) => {
         const color = getColor(index);
         html += `<div class="legend-item">`;
         html += `<div class="legend-color" style="background: ${color};"></div>`;
@@ -648,9 +658,12 @@ function updateTrendChart() {
     });
     html += '</div>';
     
-    if (filteredData.length > 6) {
-        html += `<p style="color: #cccccc; font-size: 12px; text-align: center; margin-top: 10px;">显示前6个模块，共${filteredData.length}个模块</p>`;
-    }
+    // 显示模块统计信息
+    html += `<div class="chart-info">`;
+    html += `<p style="color: #cccccc; font-size: 12px; text-align: center; margin-top: 15px;">`;
+    html += `当前显示 ${displayData.length} 个模块的趋势数据`;
+    html += `</p>`;
+    html += `</div>`;
     
     html += '</div>';
     
@@ -692,7 +705,7 @@ function updateRankingChart() {
     // 按降序排列
     rankingData.sort((a, b) => b.value - a.value);
     
-    // 创建纯CSS柱状图
+    // 创建纯CSS柱状图 - 显示所有数据
     let html = '<div class="css-bar-chart">';
     
     const maxValue = Math.max(...rankingData.map(item => item.value));

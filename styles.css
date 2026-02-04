@@ -976,42 +976,49 @@ canvas {
 }
 
 .line-chart-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
     justify-content: center;
     margin-top: 20px;
     padding: 15px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 5px 10px;
+    gap: 6px;
+    padding: 4px 8px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
+    border-radius: 12px;
     transition: all 0.3s ease;
+    font-size: 11px;
 }
 
 .legend-item:hover {
     background: rgba(255, 107, 53, 0.2);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 .legend-color {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    border: 2px solid #ffffff;
+    border: 1px solid #ffffff;
+    flex-shrink: 0;
 }
 
 .legend-label {
-    font-size: 12px;
+    font-size: 11px;
     color: #ffffff;
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* SVG动画效果 */
