@@ -22,9 +22,28 @@ const monthLabels = ['25年3月', '25年4月', '25年5月', '25年6月', '25年7
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM加载完成');
+    console.log('Chart对象:', typeof Chart);
+    
+    // 检查必要的DOM元素
+    const requiredElements = ['trendChart', 'rankingChart', 'pieChart'];
+    let missingElements = [];
+    
+    requiredElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) {
+            missingElements.push(id);
+        }
+    });
+    
+    if (missingElements.length > 0) {
+        console.error('缺少必要的DOM元素:', missingElements);
+    }
+    
     loadData();
     setupEventListeners();
     setupLogoErrorHandling();
+    setupAIAnalysis(); // 添加AI分析设置
 });
 
 // 设置logo错误处理
@@ -66,13 +85,19 @@ function setupLogoErrorHandling() {
 
 // 加载数据
 async function loadData() {
+    console.log('开始加载数据...');
     try {
-        const response = await fetch('各模块渗透率.csv');
+        const response = await fetch('./各模块渗透率.csv');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const csvText = await response.text();
+        console.log('CSV数据加载成功，长度:', csvText.length);
         parseCSV(csvText);
         updateDashboard();
     } catch (error) {
-        console.error('加载数据失败:', error);
+        console.error('加载CSV数据失败:', error);
+        console.log('使用示例数据...');
         // 使用示例数据
         loadSampleData();
         updateDashboard();
@@ -382,13 +407,21 @@ function setupEventListeners() {
 
 // 更新仪表板
 function updateDashboard() {
-    filterData();
-    updateKPIs();
-    updateTrendChart();
-    updateRankingChart();
-    updatePieChart();
-    updateHeatmap();
-    updateDataTable();
+    console.log('开始更新仪表板...');
+    console.log('filteredData长度:', filteredData.length);
+    
+    try {
+        filterData();
+        updateKPIs();
+        updateTrendChart();
+        updateRankingChart();
+        updatePieChart();
+        updateHeatmap();
+        updateDataTable();
+        console.log('仪表板更新完成');
+    } catch (error) {
+        console.error('更新仪表板时出错:', error);
+    }
 }
 
 // 筛选数据
