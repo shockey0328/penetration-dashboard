@@ -639,8 +639,9 @@ function updateTrendChart() {
             
             // 绘制数据点
             points.forEach(point => {
-                html += `<circle cx="${point.x}" cy="${point.y}" r="4" fill="${color}" stroke="#ffffff" stroke-width="2" opacity="0.9"/>`;
+                html += `<circle cx="${point.x}" cy="${point.y}" r="4" fill="${color}" stroke="#ffffff" stroke-width="2" opacity="0.9">`;
                 html += `<title>${item.二级模块}: ${point.value.toFixed(1)}%</title>`;
+                html += `</circle>`;
             });
         }
     });
